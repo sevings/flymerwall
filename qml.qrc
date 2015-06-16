@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>auth.js</file>
+        <file>storage.js</file>
+        <file>wallAPI.js</file>
+    </qresource>
+</RCC>
