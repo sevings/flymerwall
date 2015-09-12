@@ -24,6 +24,8 @@
 var posts = [];
 var allPosts = [];
 var countToLoad = 0;
+var countLoaded = 0;
+var requestsToExecute = 10;
 var n;
 var onStored;
 var page = 'flymerwall';
@@ -39,8 +41,9 @@ function getCount() {
     apiRequest(url, function(resp) {
         if (resp.hasOwnProperty('response')) {
             console.debug('got count ' + resp.response.count);
-            countToLoad = resp.response.count - StorageJS.getPostsCount(page) - 200;
+            countToLoad = resp.response.count - 200 - StorageJS.getPostsCount(page);
             posts[0] = resp.response.posts;
+            countLoaded = posts[0].length;
         }
         else
             console.debug(resp.error.error_code + ': ' + resp.error.error_msg);
@@ -61,10 +64,22 @@ function getAllPosts(loadpage, fun) {
             onStored();
             return;
         }
+        if (allPosts.length > 0) {
+            var lastCountLoaded = 0;
+        //console.log(posts.length);
+            for (var i = 0; i < posts.length; i++)
+                //if (posts[i] !== null)
+                lastCountLoaded += posts[i].length;
+            if (lastCountLoaded === requestsToExecute * 200 || lastCountLoaded > countToLoad - countLoaded - 200)
+                countLoaded += lastCountLoaded;
+            else
+                n--;
+        }
         n += 1;
+        console.log('got ' + countLoaded + ' posts');
         allPosts = allPosts.concat(posts);
         //console.log('get whole wall');
-        if (countToLoad > 0 && n < countToLoad / 2000) {
+        if (countToLoad > 0 && n < countToLoad / 200 / requestsToExecute) {
             //sleep
             execute();
         }
@@ -77,10 +92,10 @@ function getAllPosts(loadpage, fun) {
 }
 
 function execute() {
-    console.log('getting posts from ' + (n*2000+201) + ' to ' + (n*2000+2200));
-    var script = 'var i = ' + ((n+1)*10) + ';\n'
+    //console.log('getting posts from ' + (n*2000+201) + ' to ' + (n*2000+2200));
+    var script = 'var i = ' + ((n+1) * requestsToExecute) + ';\n'
             + 'var posts = [];\n'
-            + 'while (i >= ' + (n*10+1) + ') {\n'
+            + 'while (i >= ' + (n * requestsToExecute+1) + ') {\n'
                 + 'var wall = API.widgets.getComments({\n'
                     + '"widget_api_id": 3206293,\n'
                     + '"page_id": "' + page + '",\n'

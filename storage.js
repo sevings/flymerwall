@@ -32,7 +32,7 @@ function initDatabase() {
         //console.log("... create tables");
 //        tx.executeSql("DROP TABLE settings");
 //        tx.executeSql("DROP TABLE users");
-//        tx.executeSql("DROP TABLE posts");
+//        tx.executeSql("DROP TABLE flymerwall");
 //        tx.executeSql("DROP TABLE lookingforyou");
 //        tx.executeSql("DROP TABLE photo");
 //        tx.executeSql("DROP TABLE video");
@@ -42,7 +42,7 @@ function initDatabase() {
 //        tx.executeSql("DROP TABLE docs");
         tx.executeSql("CREATE TABLE IF NOT EXISTS settings (key TEXT, value TEXT, PRIMARY KEY(key))");
         tx.executeSql("CREATE TABLE IF NOT EXISTS users (id INTEGER, name TEXT, domain TEXT, avatar TEXT, PRIMARY KEY(id))");
-        tx.executeSql("CREATE TABLE IF NOT EXISTS posts (id INTEGER, user INTEGER, date TIMESTAMP, text TEXT NULL, comments SMALLINT, likes SMALLINT, reposts SMALLINT, PRIMARY KEY(id, user), FOREIGN KEY (user) REFERENCES users(id))");
+        tx.executeSql("CREATE TABLE IF NOT EXISTS flymerwall (id INTEGER, user INTEGER, date TIMESTAMP, text TEXT NULL, comments SMALLINT, likes SMALLINT, reposts SMALLINT, PRIMARY KEY(id, user), FOREIGN KEY (user) REFERENCES users(id))");
         tx.executeSql("CREATE TABLE IF NOT EXISTS lookingforyou (id INTEGER, user INTEGER, date TIMESTAMP, text TEXT NULL, comments SMALLINT, likes SMALLINT, reposts SMALLINT, PRIMARY KEY(id, user), FOREIGN KEY (user) REFERENCES users(id))");
         tx.executeSql("CREATE TABLE IF NOT EXISTS photo (id INTEGER, post_id INTEGER, user_id INTEGER, preview TEXT, original TEXT NULL, PRIMARY KEY(id, user_id), FOREIGN KEY(user_id) REFERENCES users(id))");
         tx.executeSql("CREATE TABLE IF NOT EXISTS video (id INTEGER, post_id INTEGER, user_id INTEGER, title TEXT, duration INTEGER, description TEXT NULL, preview TEXT, url TEXT, PRIMARY KEY(id, user_id), FOREIGN KEY(user_id) REFERENCES users(id))");
@@ -56,8 +56,8 @@ function initDatabase() {
 }
 
 function storePosts(posts, table) {
-    if (table === undefined || table === 'flymerwall')
-        table = 'posts';
+    if (table === undefined)
+        table = 'flymerwall';
     var db = getDatabase();
     var lastUpdate;
     db.transaction(function(tx) {
@@ -167,8 +167,8 @@ function storePosts(posts, table) {
 
 function getFairies(table) {
     var text;
-    if (table === undefined || table === 'flymerwall') {
-        table = 'posts';
+    if (table === undefined) {
+        table = 'flymerwall';
         text = '%#_а!__тену%';
     } else
         text = '%#_!__щу!__ебя%';
@@ -241,8 +241,8 @@ function getPosts(sql) {
 }
 
 function getTopPosts(table) {
-    if (table === undefined || table === 'flymerwall')
-        table = 'posts';
+    if (table === undefined)
+        table = 'flymerwall';
     var sql = 'select * from (select users.name, users.domain, likes, comments, text, date, ' + table + '.id, user\n'
             + 'from ' + table + ', users\n'
             + 'where users.id = user\n'
@@ -253,8 +253,8 @@ function getTopPosts(table) {
 }
 
 function getWeeklyTopPosts(table) {
-    if (table === undefined || table === 'flymerwall')
-        table = 'posts';
+    if (table === undefined)
+        table = 'flymerwall';
     var date = (new Date() - 1000*60*60*24*7)/1000;
     var sql = 'select *\n'
             + 'from (select users.name, users.domain, likes, comments, text, date, ' + table + '.id, user\n'
@@ -272,8 +272,8 @@ function getWeeklyTopPosts(table) {
     return getPosts(sql);
 }
 function getFirstPosts(table) {
-    if (table === undefined || table === 'flymerwall')
-        table = 'posts';
+    if (table === undefined)
+        table = 'flymerwall';
     var sql = 'select users.name, users.domain, likes, comments, text, date, ' + table + '.id, user\n'
             + 'from ' + table + ', users\n'
             + 'where users.id = user\n'
@@ -283,8 +283,8 @@ function getFirstPosts(table) {
 }
 
 function getLastPosts(table) {
-    if (table === undefined || table === 'flymerwall')
-        table = 'posts';
+    if (table === undefined)
+        table = 'flymerwall';
     var date = readSettingsValue(table + 'LastUpdate');
     if (date.length === 0)
         date = new Date() - 1000*60*60*24;
@@ -312,35 +312,33 @@ function getVTs() {
 }
 
 function getDrawings() {
-    var sql = 'select name, domain, likes, comments, text, date, posts.id, user\n'
-            + 'from posts, users,\n'
+    var sql = 'select name, domain, likes, comments, text, date, flymerwall.id, user\n'
+            + 'from flymerwall, users,\n'
                 + '(select post_id, user_id, count(*) as "count"\n'
                 + 'from photo\n'
                 + 'group by post_id, user_id) as "art"\n'
-            + 'where users.id = posts.user and art.post_id = posts.id and art.user_id = posts.user and art.count > 0\n'
-            + 'and (instr(posts.text, "рисун") > 0 or instr(posts.text, "Рисун") > 0\n'
-            + 'or instr(posts.text, "росил нарис") > 0 or instr(posts.text, "росили нарис") > 0\n'
-            + 'or instr(posts.text, "росила нарис") > 0)\n'
+            + 'where users.id = flymerwall.user and art.post_id = flymerwall.id and art.user_id = flymerwall.user and art.count > 0\n'
+            + 'and (instr(flymerwall.text, "рисун") > 0 or instr(flymerwall.text, "Рисун") > 0\n'
+            + 'or instr(flymerwall.text, "росил нарис") > 0 or instr(flymerwall.text, "росили нарис") > 0\n'
+            + 'or instr(flymerwall.text, "росила нарис") > 0)\n'
             + 'order by likes'
     return getPosts(sql);
 }
 
 function getVoices() {
-    var sql = 'select name, domain, likes, comments, text, date, posts.id as "id", user\n'
-            + 'from posts, users,\n'
+    var sql = 'select name, domain, likes, comments, text, date, flymerwall.id as "id", user\n'
+            + 'from flymerwall, users,\n'
                 + '(select post_id, user_id\n'
                 + 'from links\n'
                 + 'where url like "%pleer.com%" or url like "%yadi.sk%"\n'
                 + 'or url like "%soundcloud.com%") as "voice"\n'
-            + 'where users.id = posts.user\n'
-            + 'and voice.post_id = posts.id and voice.user_id = posts.user\n'
+            + 'where users.id = flymerwall.user\n'
+            + 'and voice.post_id = flymerwall.id and voice.user_id = flymerwall.user\n'
             + 'order by likes';
     return getPosts(sql);
 }
 
 function searchPosts(table, substring, name) {
-    if (table === 'flymerwall')
-        table = 'posts';
     var param = '';
     if (substring.length > 0)
         param += 'and instr(text, "' + substring.replace(/"/g, '""') + '") > 0\n'
@@ -355,9 +353,32 @@ function searchPosts(table, substring, name) {
     return getPosts(sql);
 }
 
+function getWeeklyCounts(table) {
+    if (table === undefined)
+        table = 'flymerwall';
+    var db = getDatabase();
+    if (!db)
+        return;
+    var counts = [];
+    db.transaction( function(tx) {
+        var i = -1;
+        var res;
+        do {
+            i++;
+            var sql = 'select count(*) as "count"\n'
+                    + 'from ' + table + '\n'
+                    + 'where date >= ' + (1382409199 + 604800 * i) + ' and date < ' + (1382409199 + 604800 * (i+1)) + '\n';
+            res = tx.executeSql(sql);
+            counts[i] = res.rows[0].count;
+            //console.log(sql)
+        } while (counts[i] > 0)
+    });
+    console.log(counts);
+}
+
 function getPostsCount(table) {
-    if (table === undefined || table === 'flymerwall')
-        table = 'posts';
+    if (table === undefined)
+        table = 'flymerwall';
     var sql = 'select count(*) as "count" from ' + table;
     var db = getDatabase();
     if (!db)
@@ -372,8 +393,8 @@ function getPostsCount(table) {
 }
 
 function setPostLikes(table, user, post, likes) {
-    if (table === undefined || table === 'flymerwall')
-        table = 'posts';
+    if (table === undefined)
+        table = 'flymerwall';
     var sql = 'update ' + table + ' \nset likes = ' + likes + ' \nwhere user = ' + user + ' and id = ' + post;
     var db = getDatabase();
     if (!db)

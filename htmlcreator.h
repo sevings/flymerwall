@@ -24,6 +24,7 @@
 
 #include <QObject>
 #include <QTemporaryFile>
+#include <QUrl>
 
 class HTMLCreator : public QObject
 {

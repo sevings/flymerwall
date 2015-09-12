@@ -318,12 +318,13 @@ ApplicationWindow {
             console.log('You chose: ' + fileUrl);
             var toSave = html.replace(/<a href="likePost\d+ofUser\d+">(\d+) &#10084;<\/a>/g, '$1 &#10084;');
             toSave = toSave.replace(/<a href=/g, '<a target=_blank href=')
-            creator.saveToFile(String(fileUrl).slice(7), toSave);
+            creator.saveToFile(fileUrl, toSave);
         }
     }
 
     Component.onCompleted: {
         StorageJS.initDatabase();
+        //StorageJS.getWeeklyCounts('flymerwall')
         //webview.url = authUrl;
     }
     function checkUrl(url) {
@@ -461,7 +462,7 @@ ApplicationWindow {
     }
 
     function loadHtml() {
-        var url = 'file://' + creator.tempFile(html);
+        var url = creator.tempFile(html);
         //console.log(url);
         webview.url = url;
         showHtml.enabled = true;

@@ -29,19 +29,22 @@ HTMLCreator::HTMLCreator()
 
 void HTMLCreator::saveToFile(QString filename, QString html)
 {
-    QFile file(filename);
+    QUrl fileurl(filename);
+    QFile file(fileurl.toLocalFile());
     saveFile(&file, html);
 }
 
 QString HTMLCreator::tempFile(QString html) {
     temp.resize(0);
     saveFile(&temp, html);
-    return temp.fileName();
+    QUrl fileurl(temp.fileName());
+    fileurl.setScheme("file");
+    return fileurl.toString();
 }
 
 void HTMLCreator::saveFile(QFile *file, QString html) {
     if (!file->open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "error opening file";
+        qDebug() << "error opening file " << file->fileName();
         return;
     }
     file->write(html.toUtf8());
