@@ -21,7 +21,7 @@
 
 import QtQuick 2.2
 import QtQuick.Controls 1.1
-import QtWebKit 3.0
+import QtWebEngine 1.5
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.2
 import htmlcreator 1.0
@@ -198,32 +198,28 @@ ApplicationWindow {
             }
         }
     }
-    ScrollView {
-        id: scroll
+    WebEngineView {
+        id: webview
         anchors.fill: parent
-        WebView {
-            id: webview
-            anchors.fill: parent
-            onUrlChanged:  {
-                checkUrl(url);
-                //console.log(url);
-                if (busy.running || /^file/.exec(url.toString()) !== null)
-                    goBack.visible = false;
-                else
-                    goBack.visible = true;
+        onUrlChanged:  {
+            checkUrl(url);
+//            console.log(url);
+            if (busy.running || /^file/.exec(url.toString()) !== null)
+                goBack.visible = false;
+            else
+                goBack.visible = true;
+        }
+        onNavigationRequested: {
+            var url = request.url.toString();
+            //console.log(url);
+            var regexp = /likePost(\d+)ofUser(\d+)$/g;
+            var ids = regexp.exec(url);
+            if (ids !== null) {
+                request.action = WebEngineNavigationRequest.IgnoreRequest;
+                WallAPI.likePost(ids[2], ids[1]);
             }
-            onNavigationRequested: {
-                var url = request.url.toString();
-                //console.log(url);
-                var regexp = /likePost(\d+)ofUser(\d+)$/g;
-                var ids = regexp.exec(url);
-                if (ids !== null) {
-                    request.action = WebView.IgnoreRequest;
-                    WallAPI.likePost(ids[2], ids[1]);
-                }
-                else {
-                    request.action = WebView.AcceptRequest;
-                }
+            else {
+                request.action = WebEngineNavigationRequest.AcceptRequest;
             }
         }
     }

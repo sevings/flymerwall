@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += qml quick widgets network
+QT += qml quick widgets network webengine
 
 SOURCES += main.cpp \
     htmlcreator.cpp

@@ -22,11 +22,15 @@
 #include <QApplication>
 #include <QtQml>
 #include <QQmlApplicationEngine>
+#include <QtWebEngine>
+
 #include "htmlcreator.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    QtWebEngine::initialize();
 
     QQmlApplicationEngine engine;
     qmlRegisterType<HTMLCreator>("htmlcreator", 1, 0, "HTMLCreator");
