@@ -298,16 +298,16 @@ function getLastPosts(table) {
 }
 
 function getVTs() {
-    var sql = 'select "Violent Daylight" as "name", "id236776651" as "domain", likes, comments, text, date, posts.id, user\n'
-            + 'from posts\n'
-            + 'where posts.user = 236776651\n'
-            //+ 'and (instr(posts.text, "Вайлент-тайм") > 0 or instr(posts.text, "В-т") > 0\n'
-            //+ 'or instr(posts.text, "Violent-time") > 0 or instr(posts.text, "V-t") > 0)\n'
-            + 'and time(posts.date, "unixepoch", "localtime") > time(68400, "unixepoch")\n' //19:00+
-            + 'and date(posts.date, "unixepoch", "localtime") > date(1422738000, "unixepoch")\n' //1 feb 2015+
-            + 'and instr(posts.text, "#на_стену") = 0 and instr(posts.text, "#Hа_стену") = 0 and posts.comments = 0\n'
-            + 'and length(posts.text) > 300\n'
-            + 'order by posts.date'
+    var sql = 'select "Violent Daylight" as "name", "id236776651" as "domain", likes, comments, text, date, flymerwall.id, user\n'
+            + 'from flymerwall\n'
+            + 'where flymerwall.user = 236776651\n'
+            //+ 'and (instr(flymerwall.text, "Вайлент-тайм") > 0 or instr(flymerwall.text, "В-т") > 0\n'
+            //+ 'or instr(flymerwall.text, "Violent-time") > 0 or instr(flymerwall.text, "V-t") > 0)\n'
+            + 'and time(flymerwall.date, "unixepoch", "localtime") > time(68400, "unixepoch")\n' //19:00+
+            + 'and date(flymerwall.date, "unixepoch", "localtime") > date(1422738000, "unixepoch")\n' //1 feb 2015+
+            + 'and instr(flymerwall.text, "#на_стену") = 0 and instr(flymerwall.text, "#Hа_стену") = 0 and flymerwall.comments = 0\n'
+            + 'and length(flymerwall.text) > 300\n'
+            + 'order by flymerwall.date'
     return getPosts(sql);
 }
 
